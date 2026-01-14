@@ -59,8 +59,9 @@
                     .append('div')
                     .attr('class', 'student-item')
                     .html(d => {
-                        return `<strong>${d['Votre nom et prénom']}</strong> - 
-                            <a target="_blank" href="https://github.com/${d['Votre login github']}/GSI2_SystemInfo_25-26">${d['Votre login github']}</a>`;
+                        return `<strong>${d['Votre nom et prénom']}</strong>
+                        - <a target="_blank" href="https://github.com/${d['Votre login github']}/GSI2_SystemInfo_25-26">${d['Votre login github']}</a>
+                        - <a target="_blank" href="https://argument.generateur.art/admin/user/${d['Votre identifiant omeka']}">Identifiant Omeka = ${d['Votre identifiant omeka']}</a>`;
                     });
             })
             .catch(error => {
