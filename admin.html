@@ -146,7 +146,7 @@
         let diagramCode, nodeIds;
         async function genereCartoArgument(e,arg){
 
-            diagramCode = 'flowchart LR\n';
+            diagramCode = 'flowchart TB\n';
             nodeIds = new Set();
 
             // Construire le diagramme pour cet argument
@@ -182,7 +182,7 @@
             diagramCode += `    ${currentId}["${arg['o:title']}"]\n`;
             
             // Créer les connexions avec les ressources liées
-            let rootId, txtId, resId;
+            let rootId, txtId, resId, prevIds = [];
             if (arg["argu:generateur"]) {
                 for (let index = 0; index < arg["argu:generateur"].length; index++) {
                     const element = arg["argu:generateur"][index];
@@ -193,22 +193,44 @@
                     }else{
                         if (element.type === 'resource') {
                             resId = 'res' + element['o:id']+'_'+element.value_resource_id;
-                            diagramCode += `    ${resId}["${element.display_title}"]\n`;
-                            diagramCode += `    ${rootId} --> ${resId}\n`;
+                            //diagramCode += `    subgraph "${element.value_resource_id}"\n`;
+                            //diagramCode += `    ${resId}["${element.display_title}"]\n`;
+                            diagramCode += `    ${resId}@{ shape: docs, label: "${element.display_title}" }\n`;                            
+                            if(prevIds.length){
+                                prevIds.forEach(pi=>{
+                                    diagramCode += `    ${pi} --> ${resId}\n`;
+                                })
+                            }else diagramCode += `    ${rootId} --> ${resId}\n`;
                             //charge les possibilités
                             let posis = await d3.json(element['@id']);
+                            prevIds = [];
                             posis[["dcterms:description"]].forEach((p,i) => {
                                 let posiId = 'posi' + element.value_resource_id+'_'+i;
                                 diagramCode += `    ${posiId}["${p['@value']}"]\n`;
                                 diagramCode += `    ${resId} --> ${posiId}\n`;
-                                
+                                prevIds.push(posiId);                                
                             });
-
-
+                            //diagramCode += `    end \n`;
+                                                        
                         }else{
+                            /*
+                            txtIdVide = 'txtVide' + element['o:id']+'_'+index;
+                            diagramCode += `    ${txtIdVide}["-"]\n`;
+                            diagramCode += `    ${rootId} --> ${txtIdVide}\n`;
                             txtId = 'txt' + element['o:id']+'_'+index;
                             diagramCode += `    ${txtId}["${element["@value"]}"]\n`;
-                            diagramCode += `    ${rootId} --> ${txtId}\n`;
+                            diagramCode += `    ${txtIdVide} --> ${txtId}\n`;
+                            */
+                            txtId = 'txt_'+index;
+                            //diagramCode += `    ${txtId}["${element["@value"]}"]\n`;
+                            diagramCode += `    ${txtId}@{ shape: stadium, label: "${element["@value"]}" }\n`;
+                            if(prevIds.length){
+                                prevIds.forEach(pi=>{
+                                    diagramCode += `    ${pi} --> ${txtId}\n`;
+                                })
+                            }else diagramCode += `    ${rootId} --> ${txtId}\n`;
+                            prevIds = [];
+                            prevIds.push(txtId);
                         }
                     }
                 }
